@@ -10,8 +10,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:CaesarSaleh!4@db.
 
 db.init_app(app)
 
+
 class Pairs(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
 
 with app.app_context():
     db.create_all()
@@ -19,13 +21,13 @@ with app.app_context():
 SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoY25ncnl0cXNtcWJuZXFqbHFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDQ1MzY5MDEsImV4cCI6MjAyMDExMjkwMX0.oDmXYe3WGiT7mIUNM_P9wZf2GIUzYtzH5T1HQX8MOjc'
 SUPABASE_API_URL = 'https://whcngrytqsmqbneqjlqs.supabase.co'
 
-@app.route('/upload', methods=['POST'])
+
 def upload_file():
     file = request.files['file']
     if file:
         # Construct the upload URL
         upload_url = f'{SUPABASE_API_URL}/storage/v1/object/images/{file.filename}'
-        
+
         # Set up headers with Supabase API key
         headers = {
             'Content-Type': 'application/octet-stream',
@@ -34,14 +36,14 @@ def upload_file():
 
         # Upload the file to Supabase Media Storage
         with open(file.filename, 'rb') as f:
-            response = requests.post(upload_url, headers=headers, data=f.read())
+            response = requests.post(
+                upload_url, headers=headers, data=f.read())
 
         # Check the response and handle accordingly
         if response.status_code == 200:
             return 'File uploaded successfully'
         else:
             return f'Error uploading file: {response.status_code} - {response.text}'
-
 
 
 def add_cors_headers(response):
@@ -55,6 +57,11 @@ def add_cors_headers(response):
 def index():
     return "Hello World!"
 
+
+@app.route('/test', methods=['GET'])
+def test(input):
+    return input + "!"
+
 # @app.route('/get_from_db', methods=['GET'])
 # def add_to_db():
 #     return
@@ -66,7 +73,7 @@ def index():
 
 # @app.route('/moonshot', methods=['GET'])
 # def classify_moonshot():
-#     return 
+#     return
 
 
 # @app.route('/ontopic', methods=['GET'])
