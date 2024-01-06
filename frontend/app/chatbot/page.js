@@ -9,7 +9,7 @@ import chatCompletion from "./assistant.js"
 
 import React, { useEffect, useState } from 'react';
 
-const apiKey = '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';
+const apiKey = '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';
 const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?"',
 'REPLY ONLY "Certainly! Please input strictly in the format {PROBLEM, SOLUTION} for me to rate your idea"',
 'REPLY ONLY "1"'];
