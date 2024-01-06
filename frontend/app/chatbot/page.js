@@ -4,16 +4,16 @@
 
 import ChatbotNavBar from "@/app/components/ChatbotNavBar";
 import useSpeechRecognition from "./speech";
-import {chatCompletion} from "./assistant.js"
+import chatCompletion from "./assistant.js"
 
 
 import React, { useEffect, useState } from 'react';
 
-const apiKey = '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';
-const prompt = 'Reply "1" if the user input contains any curly brace. \
-Reply "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?" if prompted with empty string. \
-Reply "Certainly! Please input strictly in the format {PROBLEM, SOLUTION} for me to rate your idea" if prompted with "I want you to rate my idea."';
-
+const apiKey = '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';
+const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?"',
+'REPLY ONLY "Certainly! Please input strictly in the format {PROBLEM, SOLUTION} for me to rate your idea"',
+'REPLY ONLY "1"'];
+let prompt_index = 0;
 const Chatbot = () => {
   
   const {
@@ -32,48 +32,56 @@ const Chatbot = () => {
 
 
   // Use the module function
-  const handleAskGPT = (message) => {
-    setTimeout(() => {
-      chatCompletion(apiKey, 
-        prompt
-      , message)
-      .then(response => {
-        console.log(response);
-        
-        setResponseMessage(response.toString());
-      }, [])
-      .catch(error => {
-        // Handle errors
-        console.error('Error:', error);
-      });
-    }, 10000);
-    
-    
+  const handleAskGPT = async(message) => {
+    await chatCompletion(apiKey, 
+      prompts[prompt_index]
+    , message)
+    .then(response => {
+      setResponseMessage(response);
+      prompt_index++;
+    }, [])
+    .catch(error => {
+      // Handle errors
+      console.error('Error:', error);
+    });    
   }
+  let count = 0;
+  useEffect(() => {
+    if (count < 1) {
+      const fetchData = async () => {
+        await handleAskGPT("");
+      };
+      fetchData();
+    }
+    count++;
+  }, []); // Empty dependency array means this will only run once when the component mounts.
   
   useEffect(() => {
-    const response = handleAskGPT("")
-    addMessage(false, response)
-  }, [])
+    // Now you can do something with the updated responseMessage
+    if (count  && responseMessage){
+      addMessage(false, responseMessage);
+    }
+  }, [responseMessage]); // This useEffect will run whenever responseMessage changes
+
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
   };
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (inputValue.trim() !== '') {
       addMessage(true, inputValue);
-      handleAskGPT(inputValue);
-      
+      await handleAskGPT(inputValue);
       addMessage(false, responseMessage);
     }
-
     resetText();
-  };
+  }
+
+  
 
   const addMessage = (user, text) => {
     setMessages((prevChatMessages) => [
       ...prevChatMessages,
-      { user: user, text: text},
-    ]) 
+      { user: user, text: text },
+    ]);
     setInputValue('');
   }
 
@@ -115,6 +123,7 @@ const Chatbot = () => {
                     type="text"
                     value={inputValue || text}
                     onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="Type your message..."
                     className="w-full p-2 border rounded-md mr-2"
                   />
@@ -131,7 +140,7 @@ const Chatbot = () => {
                     />
                   </button>
                 </div>
-                <button onClick={handleSubmit} className="p-2 bg-blue-500 text-white rounded-md">
+                <button id="submitButton" onClick={handleSubmit} className="p-2 bg-blue-500 text-white rounded-md">
                   Submit
                 </button>
               </div>
