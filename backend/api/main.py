@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import requests
 
@@ -56,11 +56,18 @@ def add_cors_headers(response):
 @app.route('/')
 def index():
     return "Hello World!"
-
+ 
 
 @app.route('/test', methods=['GET'])
-def test(input):
-    return input + "!"
+def test():
+    new_token = request.json
+    tokenId = new_token.get('input')
+
+    if not tokenId:
+        return jsonify({'error': 'Token ID is required'}), 400
+    
+    return tokenId
+
 
 # @app.route('/get_from_db', methods=['GET'])
 # def add_to_db():
