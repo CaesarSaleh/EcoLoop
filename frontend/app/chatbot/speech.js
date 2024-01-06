@@ -1,10 +1,13 @@
-"use client"
 import { useEffect, useState } from 'react'
-let recognition = null;
-if ("webkitSpeechRecognition" in window) {
+let recognition;
+
+if (typeof webkitSpeechRecognition !== 'undefined') {
   recognition = new webkitSpeechRecognition();
   recognition.continuous = true;
   recognition.lang = "en-US";
+} else {
+  // Handle the case when webkitSpeechRecognition is not available
+  console.error('Speech recognition not supported in this browser.');
 }
 
 const useSpeechRecognition = () => {
@@ -19,6 +22,7 @@ const useSpeechRecognition = () => {
         recognition.onresult = (event) => {
             console.log("onresult event: ", event);
             setText(event.results[0][0].transcript);
+            
             recognition.stop();
             setIsListening(false);
         };

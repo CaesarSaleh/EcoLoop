@@ -9,7 +9,7 @@ import chatCompletion from "./assistant.js"
 
 import React, { useEffect, useState } from 'react';
 
-const apiKey = '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';
+const apiKey = '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';
 const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?"',
 'REPLY ONLY "Certainly! Please input strictly in the format {PROBLEM, SOLUTION} for me to rate your idea"',
 'REPLY ONLY "1"'];
@@ -37,6 +37,7 @@ const Chatbot = () => {
       prompts[prompt_index]
     , message)
     .then(response => {
+      console.log(response)
       setResponseMessage(response);
       prompt_index++;
     }, [])
@@ -67,10 +68,17 @@ const Chatbot = () => {
     setInputValue(event.target.value);
   };
   const handleSubmit = async () => {
+    
     if (inputValue.trim() !== '') {
       addMessage(true, inputValue);
       await handleAskGPT(inputValue);
       addMessage(false, responseMessage);
+    } else{
+      if (text.trim() !== '') {
+        addMessage(true, text);
+        await handleAskGPT(text);
+        addMessage(false, responseMessage);
+      }
     }
     resetText();
   }
