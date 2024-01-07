@@ -7,13 +7,17 @@ import useSpeechRecognition from "./speech";
 import chatCompletion from "./assistant.js"
 import createImage from "./dalle";
 
+import Link from 'next/link';
+
+
 
 import React, { useEffect, useState } from 'react';
 
 const apiKey = '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';
 const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?"',
 'REPLY ONLY "Certainly! Please input strictly in the format {PROBLEM, SOLUTION} for me to rate your idea"',
-'REPLY ONLY "1"'];
+"NO EXPLANATION! ONLY OUTPUT NUMBERS! NO LABELLING NUMBERS! Analyze the {PROBLEM, SOLUTION} pair. Return a dictionary with keys as maturity stage market potential, and feasibility; mapped to the numerical values given underneath them. Maturity Stage Given the scope of the project, return the estimated number of years it takes to fully develop it and maximize your market share. Market Potential Return a list containing the estimated market size for this project in terms of millions of people and the estimated unit price for this project in terms of thousands of USD. Feasibility Return a list of floats as the answers to the following questions regarding the project. 0 is definitely not, 1 is definitely yes. The values are located between 0 and 1. Questions: Are we familiar with the technology, Is the project small, Does the project promise a high return on investment, Does the project promise a low break-even point, Is the project risk-tolerant, Are the project's goals aligned with business objectives?"
+];
 let prompt_index = 0;
 const Chatbot = () => {
   
@@ -25,7 +29,6 @@ const Chatbot = () => {
     resetText,
     hasRecognitionSupport,
   } = useSpeechRecognition();
-  
   
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
@@ -98,6 +101,10 @@ const Chatbot = () => {
     resetText();
   }
 
+
+  // const redirectToURL = () => {
+  //   router.push('https://wallet.hashpack.app/');
+  // };
   
 
   const addMessage = (user, text) => {
@@ -140,7 +147,7 @@ const Chatbot = () => {
                   </div>
                 ))}
 
-                {imageURL && (
+                {imageURL && prompt_index === 2 && (
                   <>
                     <div className="text-right">
                       <img src={imageURL} alt="Image" className="w-[300px] h-auto" />
@@ -155,7 +162,9 @@ const Chatbot = () => {
                       {/* Second Bar Chart */}
                       <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['multiple patents','multiple services','new technology'],datasets:[{label:'Example',data:${JSON.stringify(innovation)}}]}}`} alt="Second Bar Chart" />
                     </div>
-                    <button className="border-2 border-blue-500 text-blue-500 bg-white px-4 py-2 rounded focus:outline-none hover:bg-blue-500 hover:text-white">VR</button>
+                    <Link className="text-blue-500 underline" href="https://www.google.ca">
+                      VR
+                    </Link>
                   </>
                 )}
               </div>
