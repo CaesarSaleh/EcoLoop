@@ -1,8 +1,8 @@
 async function createImage(userMessage) {
-  const apiKey = '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';  // Replace with your actual OpenAI API key
+  const apiKey = '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';  // Replace with your actual OpenAI API key
 
   try {
-    const response = await fetch('https://api.openai.com/v1/images/generations	', {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

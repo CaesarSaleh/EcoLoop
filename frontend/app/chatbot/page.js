@@ -10,7 +10,7 @@ import createImage from "./dalle";
 
 import React, { useEffect, useState } from 'react';
 
-const apiKey = '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';
+const apiKey = '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';
 const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?"',
 'REPLY ONLY "Certainly! Please input strictly in the format {PROBLEM, SOLUTION} for me to rate your idea"',
 'REPLY ONLY "1"'];
@@ -31,6 +31,10 @@ const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
   const [responseMessage, setResponseMessage] = useState('');
   const [imageURL, setImageURL] = useState('');
+
+  const [scalability, setScalability] = useState([]);
+  const [feasibility, setFeasibility] = useState([]);
+  const [innovation, setInnovation] = useState([]);
 
   // Use the module function
   const handleAskGPT = async(message) => {
@@ -137,9 +141,22 @@ const Chatbot = () => {
                 ))}
 
                 {imageURL && (
-                  <div className="text-right">
-                    <img src={imageURL} alt="Image" className="w-[300px] h-auto" />
-                  </div>
+                  <>
+                    <div className="text-right">
+                      <img src={imageURL} alt="Image" className="w-[300px] h-auto" />
+                    </div>
+                    <div>
+                      {/* Bar Chart */}
+                      <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['familiarity','small','compatibility','high return','high cash flow per debt', 'low break-even point', 'high benefits per cost', 'risk-tolarant', 'goals aligned', 'market ready'],datasets:[{label:'Example',data:${JSON.stringify(feasibility)}}]}}`} alt="Bar Chart" />
+
+                      {/* Line Chart */}
+                      <img src={`https://quickchart.io/chart?c={type:'line',data:{labels:['good revenue grow rate','minimized customer acquisition cost','maximized customer retention rate', 'good gross margin', 'good return'],datasets:[{label:'Example',data:${JSON.stringify(scalability)}}]}}`} alt="Line Chart" />
+
+                      {/* Second Bar Chart */}
+                      <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['multiple patents','multiple services','new technology'],datasets:[{label:'Example',data:${JSON.stringify(innovation)}}]}}`} alt="Second Bar Chart" />
+                    </div>
+                    <button className="border-2 border-blue-500 text-blue-500 bg-white px-4 py-2 rounded focus:outline-none hover:bg-blue-500 hover:text-white">VR</button>
+                  </>
                 )}
               </div>
               <div className="flex p-2">
