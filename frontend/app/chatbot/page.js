@@ -1,5 +1,10 @@
 "use client";
+<<<<<<< HEAD
 require("dotenv").config();
+=======
+require('dotenv').config()
+
+>>>>>>> main
 
 import ChatbotNavBar from "@/app/components/ChatbotNavBar";
 import useSpeechRecognition from "./speech";
@@ -40,7 +45,8 @@ const Chatbot = () => {
   let res = null;
   // Use the module function (Small Talk)
   const handleAskGPT = async(message) => {
-    await chatCompletion(apiKey, 
+    console.log(apiKey)
+    await chatCompletion(apiKey,
       prompts[prompt_index]
     , message)
     .then(response => {
@@ -122,29 +128,6 @@ const Chatbot = () => {
     //   }
     // }
     resetText();
-
-
-  }
-
-  const handleAskRAG = async(message) => {
-    const response = await fetch('http://localhost:4000/validate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        problem: message.split(',')[0],
-        solution: message.split(',')[1],
-      }),
-    });
-  
-    if (response.ok) {
-      const data = await response.json();
-      return data.result;
-    } else {
-      throw new Error('Failed to fetch data');
-    }
-  
   }
 
   const redirectToURL = () => {

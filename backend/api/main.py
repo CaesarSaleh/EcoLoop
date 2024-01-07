@@ -1,4 +1,5 @@
-import json
+import datetime
+import random
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import requests
@@ -17,6 +18,7 @@ from summarize import summarization
 from classify import classifier
 import supabase
 from dotenv import load_dotenv
+from flask_cors import CORS, cross_origin
 
 
 load_dotenv()
@@ -52,28 +54,10 @@ for i, page in enumerate(reader.pages):
         raw_text += text
 
 
-text_splitter = CharacterTextSplitter(
-    separator="\n",
-    chunk_size=1000,
-    chunk_overlap=200,
-    length_function=len,
-)
-texts = text_splitter.split_text(raw_text)
-
-embeddings = OpenAIEmbeddings()
-
-pinecone.init(
-    api_key=os.getenv("PINECONE_API_KEY"),
-    environment=os.getenv("PINECONE_ENVIRONMENT")
-)
-index_name = os.getenv("PINECONE_INDEX_NAME")
-new_texts = [Document(page_content=text) for text in texts]
-index = Pinecone.from_documents(new_texts, embeddings, index_name=index_name)
-
-chain = load_qa_chain(OpenAI(), chain_type="stuff")
 
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 db = SQLAlchemy()
 
@@ -89,23 +73,17 @@ supabase_client = supabase.create_client(SUPABASE_API_URL, SUPABASE_API_KEY)
 
 
 def extract_dictionary(input_string):
-    # Use regular expression to find the starting and ending points of the dictionary
-    match = re.search(r'{[^{}]*}', input_string)
+    start_index = input_string.find('{')
+    end_index = input_string.find('}')
 
-    if match:
-        # Extract the matched dictionary string
-        dictionary_str = match.group()
-
-        # Convert the dictionary string to a Python dictionary
+    if start_index != -1 and end_index != -1:
+        dictionary_str = input_string[start_index:end_index + 1]
         dictionary = json.loads(dictionary_str)
-
-        # Extract the description by removing the dictionary string
         description = input_string.replace(dictionary_str, '').strip()
-
         return dictionary, description
     else:
-        # No dictionary found
         return None, input_string.strip()
+
 
 
 def append_db(query):
@@ -148,14 +126,37 @@ def test():
     return tokenId
 
 
+text_splitter = CharacterTextSplitter(
+    separator="\n",
+    chunk_size=1000,
+    chunk_overlap=200,
+    length_function=len,
+)
+texts = text_splitter.split_text(raw_text)
+
+embeddings = OpenAIEmbeddings()
+
+pinecone.init(
+    api_key=os.getenv("PINECONE_API_KEY"),
+    environment=os.getenv("PINECONE_ENVIRONMENT")
+)
+index_name = os.getenv("PINECONE_INDEX_NAME")
+new_texts = [Document(page_content=text) for text in texts]
+index = Pinecone.from_documents(new_texts, embeddings, index_name=index_name)
+
+chain = load_qa_chain(OpenAI(), chain_type="stuff")
+
 @app.route('/validate', methods=['POST'])
+@cross_origin()
 def ask_bot():
     query = request.json.get("query")
+    print(query)
 
     if not query:
         return jsonify({'error': 'query problem'}), 400
 
-    docs = index.similarity_search(query + """NO EXPLANATION! ONLY OUTPUT NUMBERS! NO LABELLING NUMBERS!
+    print(query)
+    prompt = "Problem: " + query['problem'] + " Solution: " + query['solution'] + """ NO EXPLANATION! ONLY OUTPUT NUMBERS! NO LABELLING NUMBERS!
     Analyze the {PROBLEM, SOLUTION} pair. Return a dictionary with keys as maturity stage market potential, feasibility, and scalability; mapped to the numerical values given underneath them.
 
     Maturity Stage
@@ -171,9 +172,10 @@ def ask_bot():
     Given the scope of the project, return a float from 0 (poor) to 1 (great), for the scalibility of the project.
 
     Provide a concise paragraph as to why you chose these values.
-    """, 2)
+    """
+    docs = index.similarity_search(prompt)
     metrics, validationText = extract_dictionary(
-        chain.run(input_documents=docs, question=query))
+        chain.run(input_documents=docs, question=prompt))
 
     return jsonify({"metrics": metrics, "validationText": validationText})
 
