@@ -1,5 +1,4 @@
 "use client";
-// require("dotenv").config();
 
 
 import ChatbotNavBar from "@/app/components/ChatbotNavBar";
@@ -7,16 +6,20 @@ import useSpeechRecognition from "./speech";
 import chatCompletion from "./assistant.js"
 import createImage from "./dalle";
 
+import {useRouter} from 'next/navigation';
+import CsvFileReader from "./addCSV";
 
-import React, { useEffect, useState } from 'react';
 
-const apiKey = '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';
+import React, { useCallback, useEffect, useState } from 'react';
+
+const apiKey = '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';
 const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?"',
 'REPLY ONLY "Certainly! Please input strictly in the format {PROBLEM, SOLUTION} for me to rate your idea"',
-'REPLY ONLY "1"'];
+'REPLY 1'
+];
 let prompt_index = 0;
 const Chatbot = () => {
-  
+  const router = useRouter();
   const {
     text,
     isListening,
@@ -26,20 +29,24 @@ const Chatbot = () => {
     hasRecognitionSupport,
   } = useSpeechRecognition();
   
-  
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
-  const [responseMessage, setResponseMessage] = useState('');
   const [imageURL, setImageURL] = useState('');
+  const [feasibility, setFeasibility] = useState('')
+  const [scalability, setScalability] = useState('')
+  const [maturityStage, setMaturityStage] = useState('')
+  const [marketPotential, setMarketPotential] = useState('')
 
-  // Use the module function
+  let res = null;
+  // Use the module function (Small Talk)
   const handleAskGPT = async(message) => {
     await chatCompletion(apiKey, 
       prompts[prompt_index]
     , message)
     .then(response => {
       console.log(response)
-      setResponseMessage(response);
+      res = response;
+      // setResponseMessage(response);
       prompt_index++;
     }, [])
     .catch(error => {
@@ -52,18 +59,20 @@ const Chatbot = () => {
     if (count < 1) {
       const fetchData = async () => {
         await handleAskGPT("");
+        addMessage(false, res);
       };
       fetchData();
     }
     count++;
   }, []); // Empty dependency array means this will only run once when the component mounts.
   
-  useEffect(() => {
-    // Now you can do something with the updated responseMessage
-    if (count  && responseMessage){
-      addMessage(false, responseMessage);
-    }
-  }, [responseMessage]); // This useEffect will run whenever responseMessage changes
+  
+  // useEffect(() => {
+  //   // Now you can do something with the updated responseMessage
+  //   if (!count && responseMessage && count % 2 == 0){
+  //     addMessage(false, responseMessage);
+  //   }
+  // }, [responseMessage]); // This useEffect will run whenever responseMessage changes
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
@@ -73,27 +82,74 @@ const Chatbot = () => {
     
     if (inputValue.trim() !== '') {
       addMessage(true, inputValue);
-      await handleAskGPT(inputValue);
-      if (responseMessage !=='1') {
-        addMessage(false, responseMessage);
+      if (prompt_index < 2) {
+        await handleAskGPT(inputValue);
+        addMessage(false, res);
+      } else {
+        
+        // const response = await handleAskRAG(inputValue);   // problem solution pair
+        // console.log(response.metrics)
+        // console.log(response.result)
+        // createImage(response.result)
+        // 1. data visualization
+
+        // 2. stable difussion
+        const imgUrl = await createImage(inputValue)
+        setImageURL(imgUrl)
+        // 3. add validation text
+        // addMessage(false, response.result)
+        // 4. calculate viability score
+        // 5. button for VR
       }
-      const imgURL = await createImage(inputValue)
-      setImageURL(imgURL)
-    } else{
-      if (text.trim() !== '') {
-        addMessage(true, text);
-        await handleAskGPT(text);
-        if (responseMessage !=='1') {
-          addMessage(false, responseMessage);
-          const imgURL = await createImage(text)
-          setImageURL(imgURL)
-        }
-            
-      }
+
     }
+      // if (responseMessage ==='1') {
+      //   const imgURL = await createImage(inputValue)
+      //   setImageURL(imgURL)
+      // } else {
+      //   addMessage(false, responseMessage);
+      // }
+    // } else{
+    //   if (text.trim() !== '') {
+    //     addMessage(true, text);
+    //     await handleAskGPT(text);
+    //     if (responseMessage ==='1') {
+    //       addMessage(false, responseMessage);
+    //       const imgURL = await createImage(text)
+    //       setImageURL(imgURL)
+    //     }
+            
+    //   }
+    // }
     resetText();
+
+
   }
 
+  const handleAskRAG = async(message) => {
+    const response = await fetch('http://localhost:4000/validate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        problem: message.split(',')[0],
+        solution: message.split(',')[1],
+      }),
+    });
+  
+    if (response.ok) {
+      const data = await response.json();
+      return data.result;
+    } else {
+      throw new Error('Failed to fetch data');
+    }
+  
+  }
+
+  const redirectToURL = () => {
+    router.push("https://www.google.ca")
+  };
   
 
   const addMessage = (user, text) => {
@@ -111,6 +167,10 @@ const Chatbot = () => {
     }
   };
 
+  const handleAddSingle2DB = () => {
+
+  }
+
   return (
     <>
       <main className="flex h-screen flex-col items-center justify-between">
@@ -123,10 +183,12 @@ const Chatbot = () => {
                 <div className="text-sm text-gray-500 font-normal">
                   This virtual assistant will help you validate and add your idea into the database.
                 </div>
+              
               </div>
+              <CsvFileReader/>
             </div>
             {/* Messaging Interface */}
-            <div className="flex flex-col h-3/4 mt-8 overflow-hidden">
+            <div className="flex flex-col h-[47vh] mt-8 overflow-hidden">
               <div className="flex flex-col flex-grow overflow-auto">
                 {messages.map((message, index) => (
                   <div key={index} className={message.user ? 'text-right' : 'text-left'}>
@@ -136,10 +198,25 @@ const Chatbot = () => {
                   </div>
                 ))}
 
-                {imageURL && (
-                  <div className="text-right">
-                    <img src={imageURL} alt="Image" className="w-[300px] h-auto" />
-                  </div>
+                {imageURL && prompt_index === 2 && (
+                  <>
+                    <div className="text-right">
+                      <img src={imageURL} alt="Image" className="w-[300px] h-auto" />
+                    </div>
+                    <div>
+                      {/* Bar Chart */}
+                      {/* <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['familiarity','small','compatibility','high return','high cash flow per debt', 'low break-even point', 'high benefits per cost', 'risk-tolarant', 'goals aligned', 'market ready'],datasets:[{label:'Example',data:${JSON.stringify(feasibility)}}]}}`} alt="Bar Chart" /> */}
+
+                      {/* Line Chart */}
+                      {/* <img src={`https://quickchart.io/chart?c={type:'line',data:{labels:['good revenue grow rate','minimized customer acquisition cost','maximized customer retention rate', 'good gross margin', 'good return'],datasets:[{label:'Example',data:${JSON.stringify(scalability)}}]}}`} alt="Line Chart" /> */}
+
+                      {/* Second Bar Chart */}
+                      {/* <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['multiple patents','multiple services','new technology'],datasets:[{label:'Example',data:${JSON.stringify(innovation)}}]}}`} alt="Second Bar Chart" /> */}
+                    </div>
+                    <button onClick={redirectToURL} className="max-w-[300px] text-xs rounded-full border border-blue-700 text-blue-700 p-1 mr-1">
+                      View Virtual Reality
+                    </button>
+                  </>
                 )}
               </div>
               <div className="flex p-2">
@@ -165,8 +242,20 @@ const Chatbot = () => {
                     />
                   </button>
                 </div>
-                <button id="submitButton" onClick={handleSubmit} className="p-2 bg-blue-500 text-white rounded-md">
+                
+                <button
+                  id="submitButton"
+                  onClick={handleSubmit}
+                  className="p-1 text-sm bg-[#0b9541] text-white rounded-md m-1"
+                >
                   Submit
+                </button>
+                <button
+                  id="addSingle"
+                  onClick={handleAddSingle2DB}
+                  className="p-1 text-sm bg-[#0b9541] text-white rounded-md m-1"
+                >
+                  Add Pair
                 </button>
               </div>
             </div>
