@@ -35,14 +35,16 @@ const Chatbot = () => {
   const [responseMessage, setResponseMessage] = useState('');
   const [imageURL, setImageURL] = useState('');
 
-  // Use the module function
+  let res = null;
+  // Use the module function (Small Talk)
   const handleAskGPT = async(message) => {
     await chatCompletion(apiKey, 
       prompts[prompt_index]
     , message)
     .then(response => {
       console.log(response)
-      setResponseMessage(response);
+      res = response;
+      // setResponseMessage(response);
       prompt_index++;
     }, [])
     .catch(error => {
@@ -55,18 +57,20 @@ const Chatbot = () => {
     if (count < 1) {
       const fetchData = async () => {
         await handleAskGPT("");
+        addMessage(false, res);
       };
       fetchData();
     }
     count++;
   }, []); // Empty dependency array means this will only run once when the component mounts.
   
-  useEffect(() => {
-    // Now you can do something with the updated responseMessage
-    if (count  && responseMessage){
-      addMessage(false, responseMessage);
-    }
-  }, [responseMessage]); // This useEffect will run whenever responseMessage changes
+  
+  // useEffect(() => {
+  //   // Now you can do something with the updated responseMessage
+  //   if (!count && responseMessage && count % 2 == 0){
+  //     addMessage(false, responseMessage);
+  //   }
+  // }, [responseMessage]); // This useEffect will run whenever responseMessage changes
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
@@ -74,15 +78,35 @@ const Chatbot = () => {
   const handleSubmit = async () => {
     setImageURL(null)
     
-    // if (inputValue.trim() !== '') {
-    //   addMessage(true, inputValue);
-    //   await handleAskGPT(inputValue);
-    //   if (responseMessage ==='1') {
-    //     const imgURL = await createImage(inputValue)
-    //     setImageURL(imgURL)
-    //   } else {
-    //     addMessage(false, responseMessage);
-    //   }
+    if (inputValue.trim() !== '') {
+      addMessage(true, inputValue);
+      if (prompt_index < 2) {
+        await handleAskGPT(inputValue);
+        addMessage(false, res);
+      } else {
+        
+        // const response = await handleAskRAG(inputValue);   // problem solution pair
+        // console.log(response.metrics)
+        // console.log(response.result)
+        // createImage(response.result)
+        // 1. data visualization
+
+        // 2. stable difussion
+        const imgUrl = await createImage(inputValue)
+        setImageURL(imgUrl)
+        // 3. add validation text
+        // addMessage(false, response.result)
+        // 4. calculate viability score
+        // 5. button for VR
+      }
+
+    }
+      // if (responseMessage ==='1') {
+      //   const imgURL = await createImage(inputValue)
+      //   setImageURL(imgURL)
+      // } else {
+      //   addMessage(false, responseMessage);
+      // }
     // } else{
     //   if (text.trim() !== '') {
     //     addMessage(true, text);
@@ -95,13 +119,35 @@ const Chatbot = () => {
             
     //   }
     // }
-    // resetText();
+    resetText();
+
+
   }
 
+  const handleAskRAG = async(message) => {
+    const response = await fetch('http://localhost:4000/validate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        problem: message.split(',')[0],
+        solution: message.split(',')[1],
+      }),
+    });
+  
+    if (response.ok) {
+      const data = await response.json();
+      return data.result;
+    } else {
+      throw new Error('Failed to fetch data');
+    }
+  
+  }
 
-  // const redirectToURL = () => {
-  //   router.push('https://wallet.hashpack.app/');
-  // };
+  const redirectToURL = () => {
+    console.log("google.com")
+  };
   
 
   const addMessage = (user, text) => {
@@ -120,7 +166,7 @@ const Chatbot = () => {
   };
 
   const handleAddSingle2DB = () => {
-    
+
   }
 
   return (
@@ -155,17 +201,17 @@ const Chatbot = () => {
                     </div>
                     <div>
                       {/* Bar Chart */}
-                      <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['familiarity','small','compatibility','high return','high cash flow per debt', 'low break-even point', 'high benefits per cost', 'risk-tolarant', 'goals aligned', 'market ready'],datasets:[{label:'Example',data:${JSON.stringify(feasibility)}}]}}`} alt="Bar Chart" />
+                      {/* <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['familiarity','small','compatibility','high return','high cash flow per debt', 'low break-even point', 'high benefits per cost', 'risk-tolarant', 'goals aligned', 'market ready'],datasets:[{label:'Example',data:${JSON.stringify(feasibility)}}]}}`} alt="Bar Chart" /> */}
 
                       {/* Line Chart */}
-                      <img src={`https://quickchart.io/chart?c={type:'line',data:{labels:['good revenue grow rate','minimized customer acquisition cost','maximized customer retention rate', 'good gross margin', 'good return'],datasets:[{label:'Example',data:${JSON.stringify(scalability)}}]}}`} alt="Line Chart" />
+                      {/* <img src={`https://quickchart.io/chart?c={type:'line',data:{labels:['good revenue grow rate','minimized customer acquisition cost','maximized customer retention rate', 'good gross margin', 'good return'],datasets:[{label:'Example',data:${JSON.stringify(scalability)}}]}}`} alt="Line Chart" /> */}
 
                       {/* Second Bar Chart */}
-                      <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['multiple patents','multiple services','new technology'],datasets:[{label:'Example',data:${JSON.stringify(innovation)}}]}}`} alt="Second Bar Chart" />
+                      {/* <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['multiple patents','multiple services','new technology'],datasets:[{label:'Example',data:${JSON.stringify(innovation)}}]}}`} alt="Second Bar Chart" /> */}
                     </div>
-                    <Link className="text-blue-500 underline" href="https://www.google.ca">
-                      VR
-                    </Link>
+                    <button onClick={redirectToURL} className="text-xs rounded-full border border-blue-700 text-blue-700 p-1 mr-1">
+                      View Virtual Reality
+                    </button>
                   </>
                 )}
               </div>
