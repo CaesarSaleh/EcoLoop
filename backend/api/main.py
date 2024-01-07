@@ -1,4 +1,5 @@
-import json
+import datetime
+import random
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import requests
@@ -17,6 +18,7 @@ from summarize import summarization
 from classify import classifier
 import supabase
 from dotenv import load_dotenv
+from flask_cors import CORS, cross_origin
 
 
 load_dotenv()
@@ -74,6 +76,7 @@ chain = load_qa_chain(OpenAI(), chain_type="stuff")
 
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 db = SQLAlchemy()
 
@@ -149,6 +152,7 @@ def test():
 
 
 @app.route('/validate', methods=['POST'])
+@cross_origin()
 def ask_bot():
     query = request.json.get("query")
 
