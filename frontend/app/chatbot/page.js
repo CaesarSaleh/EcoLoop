@@ -5,11 +5,12 @@
 import ChatbotNavBar from "@/app/components/ChatbotNavBar";
 import useSpeechRecognition from "./speech";
 import chatCompletion from "./assistant.js"
+import createImage from "./dalle";
 
 
 import React, { useEffect, useState } from 'react';
 
-const apiKey = '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';
+const apiKey = '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';
 const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?"',
 'REPLY ONLY "Certainly! Please input strictly in the format {PROBLEM, SOLUTION} for me to rate your idea"',
 'REPLY ONLY "1"'];
@@ -29,7 +30,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [responseMessage, setResponseMessage] = useState('');
-
+  const [imageURL, setImageURL] = useState('');
 
   // Use the module function
   const handleAskGPT = async(message) => {
@@ -68,16 +69,26 @@ const Chatbot = () => {
     setInputValue(event.target.value);
   };
   const handleSubmit = async () => {
+    setImageURL(null)
     
     if (inputValue.trim() !== '') {
       addMessage(true, inputValue);
       await handleAskGPT(inputValue);
-      addMessage(false, responseMessage);
+      if (responseMessage !=='1') {
+        addMessage(false, responseMessage);
+      }
+      const imgURL = await createImage(inputValue)
+      setImageURL(imgURL)
     } else{
       if (text.trim() !== '') {
         addMessage(true, text);
         await handleAskGPT(text);
-        addMessage(false, responseMessage);
+        if (responseMessage !=='1') {
+          addMessage(false, responseMessage);
+          const imgURL = await createImage(text)
+          setImageURL(imgURL)
+        }
+            
       }
     }
     resetText();
@@ -124,6 +135,12 @@ const Chatbot = () => {
                     </div>
                   </div>
                 ))}
+
+                {imageURL && (
+                  <div className="text-right">
+                    <img src={imageURL} alt="Image" className="w-[300px] h-auto" />
+                  </div>
+                )}
               </div>
               <div className="flex p-2">
                 <div className="relative flex-grow">
