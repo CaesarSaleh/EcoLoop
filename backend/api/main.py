@@ -188,26 +188,29 @@ def ask_bot2():
         return jsonify({'error': 'queries problem'}), 400
 
     for query in queries:
-        docs = index.similarity_search(query + """NO EXPLANATION! ONLY OUTPUT NUMBERS! NO LABELLING NUMBERS!
-            Analyze the {PROBLEM, SOLUTION} pair. Return a dictionary with keys as maturity stage market potential, feasibility, and scalability; mapped to the numerical values given underneath them.
+        prompt = "Problem: " + query['problem'] + " Solution: " + query['solution'] + """ NO EXPLANATION! ONLY OUTPUT NUMBERS! NO LABELLING NUMBERS!
+        Analyze the {PROBLEM, SOLUTION} pair. Return a dictionary with keys as maturity stage market potential, feasibility, and scalability; mapped to the numerical values given underneath them.
 
-            Maturity Stage
-            Given the scope of the project, return a float from 0 (introduction) to 1 (maturity), for the proximity of the maturity stage of the project.
+        Maturity Stage
+        Given the scope of the project, return a float from 0 (introduction) to 1 (maturity), for the proximity of the maturity stage of the project.
 
-            Market Potential
-            Given the scope of the project, return a float from 0 (poor) to 1 (great), for the market potential of the project.
-            
-            Feasibility
-            Given the scope of the project, return a float from 0 (low) to 1 (great), for the feasibility of the project.
+        Market Potential
+        Given the scope of the project, return a float from 0 (poor) to 1 (great), for the market potential of the project.
+        
+        Feasibility
+        Given the scope of the project, return a float from 0 (low) to 1 (great), for the feasibility of the project.
 
-            Scalability
-            Given the scope of the project, return a float from 0 (poor) to 1 (great), for the scalibility of the project.
+        Scalability
+        Given the scope of the project, return a float from 0 (poor) to 1 (great), for the scalibility of the project.
 
-            Provide a concise paragraph as to why you chose these values.
-            """, 2)
-        metadata = {}
+        Provide a concise paragraph as to why you chose these values.
+        """
+        docs = index.similarity_search(prompt)
+        metrics, validationText = extract_dictionary(
+        chain.run(input_documents=docs, question=prompt))
         metrics, validationText = extract_dictionary(
             chain.run(input_documents=docs, question=query))
+        metadata = {}
         sum = 0
         for metric in metrics:
             if metric.lower() == "maturity stage":
@@ -224,7 +227,7 @@ def ask_bot2():
         metadata["pair"] = query
         metadata["validationText"] = validationText
 
-        query2 = "Problem: " + metadata.pair.problem + " Solution: " + metadata.pair.solution
+        query2 = "Problem: " + metadata["pair"]["problem"] + " Solution: " + metadata["pair"]["solution"]
 
         metadata["summary"] = summarization(query2)
         metadata["moonshot"] = int(
@@ -245,7 +248,7 @@ def add_to_db():
     if not metadata:
         return jsonify({'error': 'metadata problem'}), 400
     
-    query = "Problem: " + metadata.pair.problem + " Solution: " + metadata.pair.solution
+    query = "Problem: " + metadata["pair"]["problem"] + " Solution: " + metadata["pair"]["solution"]
 
     metadata["summary"] = summarization(query)
     metadata["moonshot"] = int(
