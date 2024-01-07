@@ -5,7 +5,13 @@ import { Fragment } from 'react'
 
 const top_space = {
     padding: 10,
-    width: 85,
+    width: 80,
+    height: 70,
+  };
+
+  const top_space2 = {
+    padding: 10,
+    width: 80,
     height: 70,
   };
 
@@ -22,8 +28,8 @@ const DatabaseNavBar = () => {
     return(
       
         <div className="flex w-full p-4 items-center border-b border-white gradient-crown bg-white">
-                <Link href="https://www.securiancanada.ca/?utm_source=google&utm_medium=ps&utm_campaign=brand&utm_content=english&utm_term=securian-canada&gad_source=1">
-              <img className={`width: 300px`} src="/logo.png" alt="Your Company" style={top_space}/>
+                <Link href="/">
+              <img className={`width: 400px`} src="/logo.png" alt="Your Company" style={top_space2}/>
             </Link>
                 <div className={`bg-white justify flex p-2 gap-8 w-full`}>
                     <Link className="py-2 border rounded w-full px-4 text-center bg-white" href={"/chatbot"}>
@@ -40,7 +46,7 @@ const DatabaseNavBar = () => {
       <div>
         <Menu.Button className="inline-flex w-full rounded-md bg-white px-1 py-1 text-sm font-semibold">
           {/* <ChevronDownIcon className="-mr-1 h-5 w-5 text-gray-400" aria-hidden="true" /> */}
-          <img className="h-9 w-5 rounded-full" src={user.imageUrl} alt="Stacy" style={top_space} />
+          <img className="rounded-full" src={user.imageUrl} alt="Caesar" style={top_space} />
         </Menu.Button>
       </div>
 
