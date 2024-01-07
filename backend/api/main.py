@@ -19,6 +19,7 @@ from classify import classifier
 import supabase
 from dotenv import load_dotenv
 from flask_cors import CORS, cross_origin
+import json
 
 
 load_dotenv()
@@ -147,7 +148,6 @@ index = Pinecone.from_documents(new_texts, embeddings, index_name=index_name)
 chain = load_qa_chain(OpenAI(), chain_type="stuff")
 
 @app.route('/validate', methods=['POST'])
-@cross_origin()
 def ask_bot():
     query = request.json.get("query")
     print(query)

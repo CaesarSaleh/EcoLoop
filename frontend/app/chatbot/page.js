@@ -1,10 +1,5 @@
 "use client";
-<<<<<<< HEAD
 require("dotenv").config();
-=======
-require('dotenv').config()
-
->>>>>>> main
 
 import ChatbotNavBar from "@/app/components/ChatbotNavBar";
 import useSpeechRecognition from "./speech";
@@ -19,7 +14,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 const apiKey = process.env.NEXT_PUBLIC_OPEN_AI_API_KEY;
 const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?"',
-'REPLY ONLY "Certainly! Please input strictly in the format {PROBLEM, SOLUTION} for me to rate your idea"',
+'REPLY ONLY "Certainly! Please input strictly in the format PROBLEM || SOLUTION for me to rate your idea"',
 'REPLY 1'
 ];
 let prompt_index = 0;
@@ -37,11 +32,12 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [imageURL, setImageURL] = useState('');
-  const [feasibility, setFeasibility] = useState('')
-  const [scalability, setScalability] = useState('')
-  const [maturityStage, setMaturityStage] = useState('')
-  const [marketPotential, setMarketPotential] = useState('')
-
+  const[feasibility, setFeasibility] = useState(0);
+  const[scalability, setScalability] = useState(0);
+  const[maturityStage, setMaturityStage] = useState(0);
+  const[marketPotential, setMarketPotential] = useState(0);
+  const[viabilityScore, setViabilityScore] = useState(0);
+  
   let res = null;
   // Use the module function (Small Talk)
   const handleAskGPT = async(message) => {
@@ -71,14 +67,6 @@ const Chatbot = () => {
     }
     count++;
   }, []); // Empty dependency array means this will only run once when the component mounts.
-  
-  
-  // useEffect(() => {
-  //   // Now you can do something with the updated responseMessage
-  //   if (!count && responseMessage && count % 2 == 0){
-  //     addMessage(false, responseMessage);
-  //   }
-  // }, [responseMessage]); // This useEffect will run whenever responseMessage changes
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
@@ -92,20 +80,31 @@ const Chatbot = () => {
         await handleAskGPT(inputValue);
         addMessage(false, res);
       } else {
+        const metrics = {
+          "Maturity Stage": 0.3,
+          "Market Potential": 0.8,
+          "Feasibility": 0.5,
+          "Scalability": 0.6
+          };
+        const validation_text = "It looks like you've provided a set of values associated with different factors related to a business or product. These values seem to represent assessments or scores for various aspects. Here's a breakdown based on the provided data: Maturity Stage: 0.3 This may indicate the current stage of maturity of a product, project, or business. A value of 0.3 suggests that it might be in the early stages of development or adoption. Market Potential: 0.8 This value of 0.8 indicates a relatively high market potential. It suggests that there is a favorable market for the product or business, and there is a good opportunity for growth. Feasibility: 0.5 A feasibility score of 0.5 suggests a moderate level of feasibility. This could refer to the practicality and viability of the project or product. Scalability: 0.6 A scalability score of 0.6 implies a moderate level of scalability. Scalability refers to the ability of a system, product, or business to handle growth and increased demand. Overall, these values seem to provide a snapshot of the current state and potential of the subject, with moderate to high market potential, feasibility, and scalability, but a lower maturity stage. Keep in mind that the interpretation may vary based on the specific context and industry.";
         
         // const response = await handleAskRAG(inputValue);   // problem solution pair
+        // console.log(response)
         // console.log(response.metrics)
-        // console.log(response.result)
-        // createImage(response.result)
-        // 1. data visualization
-
-        // 2. stable difussion
+        // console.log(response.validationText)
         const imgUrl = await createImage(inputValue)
+        // 1. data visualization
+        setMaturityStage(metrics["Maturity Stage"]);
+        setMarketPotential(metrics["Market Potential"]);
+        
+        setFeasibility(metrics["Feasibility"]);
+        setScalability(metrics["Scalability"]);
+        addMessage(false, validation_text);
+        
+        
         setImageURL(imgUrl)
-        // 3. add validation text
-        // addMessage(false, response.result)
-        // 4. calculate viability score
-        // 5. button for VR
+        setViabilityScore((metrics["Maturity Stage"] + metrics["Market Potential"] + metrics["Feasibility"] + metrics["Scalability"])*25);
+        console.log(viabilityScore)
       }
 
     }
@@ -129,6 +128,34 @@ const Chatbot = () => {
     // }
     resetText();
   }
+
+
+  // const handleAskRAG = async (input) => {
+  //   console.log(input)
+  //   fetch('/api/validate', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+
+  //     },
+  //     body: JSON.stringify({"query":{
+  //       "problem": input.split(",\"")[0],
+  //       "solution": input.split(",\"")[0],
+  //     }}),
+  //   }).then(response => response.json()).then(data =>
+  //     {
+  //       metrics = {
+  //         "Maturity Stage": 0.3,
+  //         "Market Potential": 0.8,
+  //         "Feasibility": 0.5,
+  //         "Scalability": 0.6
+  //         };
+  //       validation_text = "It looks like you've provided a set of values associated with different factors related to a business or product. These values seem to represent assessments or scores for various aspects. Here's a breakdown based on the provided data: Maturity Stage: 0.3 This may indicate the current stage of maturity of a product, project, or business. A value of 0.3 suggests that it might be in the early stages of development or adoption. Market Potential: 0.8 This value of 0.8 indicates a relatively high market potential. It suggests that there is a favorable market for the product or business, and there is a good opportunity for growth. Feasibility: 0.5 A feasibility score of 0.5 suggests a moderate level of feasibility. This could refer to the practicality and viability of the project or product. Scalability: 0.6 A scalability score of 0.6 implies a moderate level of scalability. Scalability refers to the ability of a system, product, or business to handle growth and increased demand. Overall, these values seem to provide a snapshot of the current state and potential of the subject, with moderate to high market potential, feasibility, and scalability, but a lower maturity stage. Keep in mind that the interpretation may vary based on the specific context and industry.";
+
+  //       return data; 
+  //     }
+  //     ).catch(err => console.log(err, "errrorororro"));  
+  // }
 
   const redirectToURL = () => {
     router.push("https://www.google.ca")
@@ -170,6 +197,7 @@ const Chatbot = () => {
   
     if (response.ok) {
       const data = await response.json();
+      
       return data.result;
     } else {
       throw new Error('Failed to fetch data');
@@ -209,14 +237,9 @@ const Chatbot = () => {
                       <img src={imageURL} alt="Image" className="w-[300px] h-auto" />
                     </div>
                     <div>
-                      {/* Bar Chart */}
-                      {/* <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['familiarity','small','compatibility','high return','high cash flow per debt', 'low break-even point', 'high benefits per cost', 'risk-tolarant', 'goals aligned', 'market ready'],datasets:[{label:'Example',data:${JSON.stringify(feasibility)}}]}}`} alt="Bar Chart" /> */}
 
-                      {/* Line Chart */}
-                      {/* <img src={`https://quickchart.io/chart?c={type:'line',data:{labels:['good revenue grow rate','minimized customer acquisition cost','maximized customer retention rate', 'good gross margin', 'good return'],datasets:[{label:'Example',data:${JSON.stringify(scalability)}}]}}`} alt="Line Chart" /> */}
+                      <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['Maturity Stage','Market Potential','Feasibility','Scalability'],datasets:[{label:'Example',data:${JSON.stringify([maturityStage, marketPotential, feasibility, scalability])}}]}}`} alt="Bar Chart" />
 
-                      {/* Second Bar Chart */}
-                      {/* <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['multiple patents','multiple services','new technology'],datasets:[{label:'Example',data:${JSON.stringify(innovation)}}]}}`} alt="Second Bar Chart" /> */}
                     </div>
                     <button onClick={redirectToURL} className="max-w-[300px] text-xs rounded-full border border-blue-700 text-blue-700 p-1 mr-1">
                       View Virtual Reality
