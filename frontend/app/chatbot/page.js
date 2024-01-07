@@ -1,5 +1,5 @@
 "use client";
-
+require("dotenv").config();
 
 import ChatbotNavBar from "@/app/components/ChatbotNavBar";
 import useSpeechRecognition from "./speech";
@@ -12,7 +12,7 @@ import CsvFileReader from "./addCSV";
 
 import React, { useCallback, useEffect, useState } from 'react';
 
-const apiKey = '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';
+const apiKey = process.env.NEXT_PUBLIC_OPEN_AI_API_KEY;
 const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?"',
 'REPLY ONLY "Certainly! Please input strictly in the format {PROBLEM, SOLUTION} for me to rate your idea"',
 'REPLY 1'
@@ -87,10 +87,10 @@ const Chatbot = () => {
         addMessage(false, res);
       } else {
         
-        // const response = await handleAskRAG(inputValue);   // problem solution pair
-        // console.log(response.metrics)
-        // console.log(response.result)
-        // createImage(response.result)
+        const response = await handleAskRAG(inputValue);   // problem solution pair
+        console.log(response.metrics)
+        console.log(response.result)
+        createImage(response.result)
         // 1. data visualization
 
         // 2. stable difussion
