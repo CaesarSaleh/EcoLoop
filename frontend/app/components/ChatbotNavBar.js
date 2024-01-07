@@ -4,7 +4,13 @@ import { Fragment } from 'react'
 
 const top_space = {
     padding: 10,
-    width: 85,
+    width: 80,
+    height: 70,
+  };
+
+  const top_space2 = {
+    padding: 10,
+    width: 80,
     height: 70,
   };
 
@@ -19,7 +25,7 @@ const ChatbotNavBar = () => {
   return(
         <div className="flex w-full p-4 items-center border-b border-white">
             <Link href="/">
-              <img className="h-8 w-8 rounded-full" src="/logo.png" alt="Your Company" style={top_space}/>
+              <img className="h-8 w-8 rounded-full" src="/logo.png" alt="Your Company" style={top_space2}/>
             </Link>
             <div className="flex w-full items-center justify-evenly p-2 gap-8" id="TopHeading">
                 <div className="py-2 border rounded w-full px-4 bg-[#0b9541] text-white text-center font-bold">
@@ -35,7 +41,7 @@ const ChatbotNavBar = () => {
           <Menu as="div" className="relative inline-block text-left">
       <div>
         <Menu.Button className="inline-flex w-full rounded-md bg-white px-1 py-1 text-sm font-semibold">
-          <img className="h-9 w-5 rounded-full" src={user.imageUrl} alt="Stacy" style={top_space} />
+          <img className="rounded-full" src={user.imageUrl} alt="Caesar" style={top_space} />
         </Menu.Button>
       </div>
 
