@@ -37,6 +37,7 @@ const Chatbot = () => {
   const[maturityStage, setMaturityStage] = useState(0);
   const[marketPotential, setMarketPotential] = useState(0);
   const[viabilityScore, setViabilityScore] = useState(0);
+  const [validationText, setValidationText] = useState("")
   
   let res = null;
   // Use the module function (Small Talk)
@@ -86,7 +87,7 @@ const Chatbot = () => {
           "Feasibility": 0.5,
           "Scalability": 0.6
           };
-        const validation_text = "It looks like you've provided a set of values associated with different factors related to a business or product. These values seem to represent assessments or scores for various aspects. Here's a breakdown based on the provided data: Maturity Stage: 0.3 This may indicate the current stage of maturity of a product, project, or business. A value of 0.3 suggests that it might be in the early stages of development or adoption. Market Potential: 0.8 This value of 0.8 indicates a relatively high market potential. It suggests that there is a favorable market for the product or business, and there is a good opportunity for growth. Feasibility: 0.5 A feasibility score of 0.5 suggests a moderate level of feasibility. This could refer to the practicality and viability of the project or product. Scalability: 0.6 A scalability score of 0.6 implies a moderate level of scalability. Scalability refers to the ability of a system, product, or business to handle growth and increased demand. Overall, these values seem to provide a snapshot of the current state and potential of the subject, with moderate to high market potential, feasibility, and scalability, but a lower maturity stage. Keep in mind that the interpretation may vary based on the specific context and industry.";
+        setValidationText("It looks like you've provided a set of values associated with different factors related to a business or product. These values seem to represent assessments or scores for various aspects. Here's a breakdown based on the provided data: Maturity Stage: 0.3 This may indicate the current stage of maturity of a product, project, or business. A value of 0.3 suggests that it might be in the early stages of development or adoption. Market Potential: 0.8 This value of 0.8 indicates a relatively high market potential. It suggests that there is a favorable market for the product or business, and there is a good opportunity for growth. Feasibility: 0.5 A feasibility score of 0.5 suggests a moderate level of feasibility. This could refer to the practicality and viability of the project or product. Scalability: 0.6 A scalability score of 0.6 implies a moderate level of scalability. Scalability refers to the ability of a system, product, or business to handle growth and increased demand. Overall, these values seem to provide a snapshot of the current state and potential of the subject, with moderate to high market potential, feasibility, and scalability, but a lower maturity stage. Keep in mind that the interpretation may vary based on the specific context and industry.");
         
         // const response = await handleAskRAG(inputValue);   // problem solution pair
         // console.log(response)
@@ -104,7 +105,6 @@ const Chatbot = () => {
         
         setImageURL(imgUrl)
         setViabilityScore((metrics["Maturity Stage"] + metrics["Market Potential"] + metrics["Feasibility"] + metrics["Scalability"])*25);
-        console.log(viabilityScore)
       }
 
     }
@@ -186,11 +186,11 @@ const Chatbot = () => {
       },
       body: JSON.stringify({ 
         pair:{problem, solution}, 
-        maturity,
-        market_potential,
+        maturityStage,
+        marketPotential,
         scalability,
         feasibility,
-        score,
+        viabilityScore,
         validation_text
       }),
     });
