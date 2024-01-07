@@ -124,31 +124,6 @@ const Chatbot = () => {
     //   }
     // }
     resetText();
-
-
-  }
-
-  const handleAskRAG = async(message) => {
-    const response = await fetch('http://127.0.0.1:4000/validate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json', 
-        'Access-Control-Allow-Origin': '*',
-        'credentials': 'true'
-      },
-      body: JSON.stringify({query:{
-        problem: message.split(',')[0],
-        solution: message.split(',')[1],
-      }}),
-    });
-  
-    if (response.ok) {
-      const data = await response.json();
-      return data.result;
-    } else {
-      throw new Error('Failed to fetch data');
-    }
-  
   }
 
   const redirectToURL = () => {

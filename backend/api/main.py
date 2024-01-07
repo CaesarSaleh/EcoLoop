@@ -225,9 +225,15 @@ def ask_bot2():
 
         metadata["pair"] = query
         metadata["validationText"] = validationText
-        metadata["summary"] = summarization(query)
-        metadata["moonshot"] = int(round(classifier(query)["moonshot"]))
-        metadata["ontopic"] = int(round(1 - classifier(query)["ontopic"]))
+
+        query2 = "Problem: " + metadata.pair.problem + " Solution: " + metadata.pair.solution
+
+        metadata["summary"] = summarization(query2)
+        metadata["moonshot"] = int(
+        round(classifier(query2).labels["moonshot"].confidence))
+
+        metadata["ontopic"] = int(
+        round(1 - classifier(query2).labels["on-topic"].confidence))
 
         append_db(metadata)
 
@@ -240,12 +246,14 @@ def add_to_db():
 
     if not metadata:
         return jsonify({'error': 'metadata problem'}), 400
+    
+    query = "Problem: " + metadata.pair.problem + " Solution: " + metadata.pair.solution
 
     metadata["summary"] = summarization(query)
     metadata["moonshot"] = int(
-        round(classify(query).labels["moonshot"].confidence))
+        round(classifier(query).labels["moonshot"].confidence))
     metadata["ontopic"] = int(
-        round(1 - classify(query).labels["on-topic"].confidence))
+        round(1 - classifier(query).labels["on-topic"].confidence))
 
     add_to_db(metadata)
     return jsonify({"success": True})
@@ -259,7 +267,7 @@ def get_from_db():
         return jsonify({'error': 'id problem'}), 400
 
     response = supabase_client.table(
-        table_name).select("*").eq("id", id).execute()
+        'data').select("*").eq("id", id).execute()
 
     if response.status_code == 200:
         data = response.json()["data"]
@@ -275,7 +283,7 @@ def get_from_db():
 
 @app.route('/get_dataset', methods=['GET'])
 def get_dataset():
-    response = supabase_client.table(table_name).select("*").execute()
+    response = supabase_client.table('data').select("*").execute()
 
     if response.status_code == 200:
         data = response.json()["data"]
