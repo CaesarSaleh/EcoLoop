@@ -87,10 +87,10 @@ const Chatbot = () => {
         addMessage(false, res);
       } else {
         
-        const response = await handleAskRAG(inputValue);   // problem solution pair
-        console.log(response.metrics)
-        console.log(response.result)
-        createImage(response.result)
+        // const response = await handleAskRAG(inputValue);   // problem solution pair
+        // console.log(response.metrics)
+        // console.log(response.result)
+        // createImage(response.result)
         // 1. data visualization
 
         // 2. stable difussion
@@ -167,8 +167,30 @@ const Chatbot = () => {
     }
   };
 
-  const handleAddSingle2DB = () => {
-
+  const handleAddSingle2DB = async () => {
+    // http request to store {pair: {problem: prob, solution: sol}, maturity, market_potential, scalability, feasibility, score, validation text}
+    const response = await fetch('http://localhost:4000/add_to_db', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        pair:{problem, solution}, 
+        maturity,
+        market_potential,
+        scalability,
+        feasibility,
+        score,
+        validation_text
+      }),
+    });
+  
+    if (response.ok) {
+      const data = await response.json();
+      return data.result;
+    } else {
+      throw new Error('Failed to fetch data');
+    }
   }
 
   return (
