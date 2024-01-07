@@ -17,11 +17,31 @@ export default function CurrentPairView({params}) {
 
 useEffect(() => {
         const getLifeClaim = async (docid) => {
-                const claim_data = {docid: "12u2u8123828", summary: "This is a summary", viabilityscore: "90%"};
-                setClaimData(claim_data);
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json', // Set the content type to JSON
+                  // Add any additional headers if needed
+                },
+                body: JSON.stringify({id: docid}) // Convert the data to JSON format
+              })
+                .then(response => {
+                  if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                  }
+                  return response.json(); // Assuming the server returns JSON data
+                })
+                .then(data => {
+                  setClaimData(data);
+                  console.log("Response from server:", data);
+                })
+                .catch(error => {
+                  // Handle errors
+                  console.error("Error:", error);
+                });              
         };
 
-        getLifeClaim("12u2u8123828");
+        getLifeClaim(params.docid);
 }, []);
 // } <-- Remove this closing curly brace
 
@@ -41,7 +61,13 @@ useEffect(() => {
                                                 router.back();
                                             }}
                                         >
-                                            <div className="text-white">Back</div>
+                                            <div className="text-white">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24" className="inline pb-1">
+                                            <path d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M20 11H7.414l2.293-2.293a1 1 0 0 0-1.414-1.414l-4 4a1 1 0 0 0 0 1.414l4 4a1 1 0 0 0 1.414-1.414L7.414 13H20a1 1 0 0 0 0-2z"/>
+                                            </svg>
+
+                                            Back</div>
                                         </button>
                                     </div>
 
@@ -53,7 +79,7 @@ useEffect(() => {
                                                 <Menu.Button className="relative flex rounded-full bg-white text-sm ring-2 ring-white ring-opacity-20 focus:outline-none focus:ring-opacity-100">
                                                     <span className="absolute -inset-1.5" />
                                                     <span className="sr-only">Open user menu</span>
-                                                    <img className="h-8 w-8 rounded-full" alt="" />
+                                                    <img className="h-14 w-14 rounded-full" alt="" src="/profile.png"/>
                                                 </Menu.Button>
                                             </div>
                                         </Menu>

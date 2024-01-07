@@ -1,7 +1,13 @@
 import cohere
 from cohere.responses.classify import Example
+from dotenv import load_dotenv
+import os
 
-co = cohere.Client("Isa3T0jPfVHaRlBLLNetcGCJEMot56YO4JWqSk7w")
+
+load_dotenv()
+
+
+co = cohere.Client(os.getenv("COHERE_API_KEY"))
 
 def classifier(input):
     response = co.classify(
@@ -365,5 +371,5 @@ def classifier(input):
             ),
         ],
     )
-    return response.classifications
+    return response.classifications[0]
 

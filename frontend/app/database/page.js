@@ -19,8 +19,6 @@ const filters = [
 export default function Database() {
   const [currentClaims, setCurrentClaims] = useState([{docid: "12u2u8123828", summary: "This is a summary", viabilityscore: "90%"}]);
   const router = useRouter();
-  const [dataLoading, setDataLoading] = useState(true);
-  const [claimIndex, setClaimIndex] = useState(0);
 
   useEffect(() => {
     document.title = "EcoLoop Dashboard";
@@ -42,40 +40,27 @@ export default function Database() {
     const newState = checkboxState;
     newState[optionValue] = !checkboxState[optionValue];
     setCheckboxState(newState);
-    setClaimIndex(0);
     setCurrentClaims([]);
-    const queryParams = new URLSearchParams(checkboxState);
-    getFilteredData(`${queryParams}`);
+    getFilteredData();
   };
 
-  const getFilteredData = (params) => {
-    setDataLoading(true);
-    fetch(`/api/get_filtered/${params}/${claimIndex}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (claimIndex === 0) {
-          setCurrentClaims(data);
-        }
-        else {
-          setCurrentClaims([...currentClaims, ...data]);
-        }
-        setDataLoading(false);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+  const getFilteredData = () => {
+    if (!checkboxState["1"] && !checkboxState["2"]) {
+      fetch(process.env.BACKEND_URL + "/get_dataset").then((response) => response.json()).then((data) => {setCurrentClaims(data)}).catch((error) => {console.error(error);});
+    } else if (checkboxState["1"] && !checkboxState["2"]) {
+      fetch(process.env.BACKEND_URL + "/get_moonshots").then((response) => response.json()).then((data) => {setCurrentClaims(data)}).catch((error) => {console.error(error);});
+      fetch(process.env.BACKEND_URL + "/get_ontopics").then((response) => response.json()).then((data) => {currentClaims.concat(data)}).catch((error) => {console.error(error);});
+    } else if (checkboxState["1"]) {
+      fetch(process.env.BACKEND_URL + "/get_moonshots").then((response) => response.json()).then((data) => {setCurrentClaims(data)}).catch((error) => {console.error(error);});
+    } else if (checkboxState["2"]) {
+      fetch(process.env.BACKEND_URL + "/get_ontopics").then((response) => response.json()).then((data) => {setCurrentClaims(data)}).catch((error) => {console.error(error);});
+    }
   };
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(checkboxState);
 
-    // Append the query parameters to the API endpoint
-    getFilteredData(`${queryParams}`);
-  }, [checkboxState, claimIndex]);
-
-  const handleLoadMore = () => {
-    setClaimIndex(claimIndex + 1);
-  }
+    getFilteredData();
+  }, [checkboxState]);
 
 
 const top_space = {
@@ -91,10 +76,10 @@ const top_space = {
         <div className="flex justify-center w-full border-gray-200 border-t  bg-gray-50 ">
           <div className="w-[90%] h-full pt-8 text-2xl font-semibold">
             <div className="min-w-full p-4 drop-shadow-md rounded-md border bg-white flex flex-col gap-2">
-              <div className="">Processed Claims</div>
+              <div className="">Problem/Solution Pairs</div>
               <div className="flex items-center">
                 <div className="text-sm text-gray-500 font-normal">
-                  These claims have already been processed
+                  These are problem/solution pairs that have been proposed in the past under the topic of circular economy.
                 </div>
               </div>
             </div>
@@ -158,7 +143,7 @@ const top_space = {
                         scope="col"
                         className="sticky top-0 z-10 border-b border-gray-300 bg-white bg-opacity-75 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter"
                       >
-                        Content
+                        Problem Summary
                       </th>
                       <th
                         scope="col"
@@ -207,37 +192,7 @@ const top_space = {
                   )}
                 </table>
                 </div>
-                {!dataLoading ? (
-                  <div className="flex justify-center w-full mb-4">
-                    <button
-                      className="px-4 py-2 bg-gray-50 border rounded-md"
-                      onClick={handleLoadMore}
-                    >
-                      Load More
-                    </button>
-                  </div>
-                ) : (
-                  <div role="status" className="flex w-full items-center justify-center">
-                    <svg
-                      aria-hidden="true"
-                      className="w-6 h-6 text-gray-400 animate-spin  fill-green-600"
-                      viewBox="0 0 100 101"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                        fill="currentColor"
-                      />
-                      <path
-                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                        fill="currentFill"
-                      />
-                    </svg>
-                    <span className="sr-only">Loading...</span>
-                  </div>
-                )}
-              </div>
+               </div>
             </div>
           </div>
         </div>

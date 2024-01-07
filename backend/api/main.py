@@ -7,16 +7,22 @@
 # from langchain.text_splitter import CharacterTextSplitter
 # from langchain.vectorstores import Pinecone
 
-# from langchain.chains.question_answering import load_qa_chain
-# from langchain.llms import OpenAI
-# import pinecone
-# import os
-# from langchain.schema import Document
-# from summarize import summarization
-# from classify import classifier
+from langchain.chains.question_answering import load_qa_chain
+from langchain.llms import OpenAI
+import pinecone
+import os
+from langchain.schema import Document
+from summarize import summarization
+from classify import classifier
+import supabase
+from dotenv import load_dotenv
 
 
-# os.environ["OPENAI_API_KEY"] = "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"
+load_dotenv()
+
+
+os.environ["OPENAI_API_KEY"] = os.getenv("OPEN_AI_API_KEY")
+print(os.getenv("OPENAI_API_KEY"))
 
 # reader = PdfReader('../data/1.pdf')
 # raw_text = ''
@@ -55,13 +61,13 @@
 
 # embeddings = OpenAIEmbeddings()
 
-# pinecone.init(
-#     api_key="5fceaaa7-664f-41c9-824e-3434ccd7480f",
-#     environment="gcp-starter"
-# )
-# index_name = "ecoloop"
-# new_texts = [Document(page_content=text) for text in texts]
-# index = Pinecone.from_documents(new_texts, embeddings, index_name=index_name)
+pinecone.init(
+    api_key=os.getenv("PINECONE_API_KEY"),
+    environment=os.getenv("PINECONE_ENVIRONMENT")
+)
+index_name = os.getenv("PINECONE_INDEX_NAME")
+new_texts = [Document(page_content=text) for text in texts]
+index = Pinecone.from_documents(new_texts, embeddings, index_name=index_name)
 
 # chain = load_qa_chain(OpenAI(), chain_type="stuff")
 
@@ -70,15 +76,15 @@
 
 # db = SQLAlchemy()
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:CaesarSaleh!4@db.whcngrytqsmqbneqjlqs.supabase.co:5432/postgres'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SUPABASE_URI")
 
 # db.init_app(app)
 
 
-# SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoY25ncnl0cXNtcWJuZXFqbHFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDQ1MzY5MDEsImV4cCI6MjAyMDExMjkwMX0.oDmXYe3WGiT7mIUNM_P9wZf2GIUzYtzH5T1HQX8MOjc'
-# SUPABASE_API_URL = 'https://whcngrytqsmqbneqjlqs.supabase.co'
+SUPABASE_API_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_API_URL = os.getenv("SUPABASE_URL")
 
-# supabase_client = supabase.create_client(supabase_url, supabase_key)
+supabase_client = supabase.create_client(SUPABASE_API_URL, SUPABASE_API_KEY)
 
 
 # def extract_dictionary(input_string):
@@ -171,9 +177,9 @@
 #     return jsonify({"metrics": metrics, "validationText": validationText})
 
 
-# @app.route('/validate_dataset', methods=['POST'])
-# def ask_bot():
-#     queries = json.loads(request.json)
+@app.route('/validate_dataset', methods=['POST'])
+def ask_bot2():
+    queries = json.loads(request.json)
 
 #     if not queries:
 #         return jsonify({'error': 'queries problem'}), 400
@@ -212,11 +218,11 @@
 #             sum += metrics[metric]
 #         metadata["score"] = sum / 4
 
-#         metadata["pair"] = query
-#         metadata["validationText"] = validationText
-#         metadata["summary"] = summarization(query)
-#         metadata["moonshot"] = int(round(classify(query)[1]))
-#         metadata["ontopic"] = int(round(1 - classify(query)[2]))
+        metadata["pair"] = query
+        metadata["validationText"] = validationText
+        metadata["summary"] = summarization(query)
+        metadata["moonshot"] = int(round(classifier(query)["moonshot"]))
+        metadata["ontopic"] = int(round(1 - classifier(query)["ontopic"]))
 
 #         append_db(metadata)
 
@@ -230,9 +236,11 @@
 #     if not metadata:
 #         return jsonify({'error': 'metadata problem'}), 400
 
-#     metadata["summary"] = summarization(query)
-#     metadata["moonshot"] = int(round(classify(query)[1]))
-#     metadata["ontopic"] = int(round(1 - classify(query)[2]))
+    metadata["summary"] = summarization(query)
+    metadata["moonshot"] = int(
+        round(classify(query).labels["moonshot"].confidence))
+    metadata["ontopic"] = int(
+        round(1 - classify(query).labels["on-topic"].confidence))
 
 #     add_to_db(metadata)
 #     return jsonify({"success": True})
@@ -276,6 +284,40 @@
 #         return {"dataset": []}
 
 
-# if __name__ == '__main__':
-#     app.after_request(add_cors_headers)
-#     app.run(port=4000, debug=True)
+@app.route('/get_moonshots', methods=['GET'])
+def get_moonshots():
+    table_name = 'data'
+
+    # Query rows where the 'moonshot' column is equal to 1
+    response = supabase_client.table(table_name).select(
+        "*").eq("moonshot", 1).execute()
+
+    # Check if the query was successful
+    if response.status_code == 200:
+        data = response.json()["data"]
+        return data
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+        return None
+
+
+@app.route('/get_ontopics', methods=['GET'])
+def get_ontopics():
+    table_name = 'data'
+
+    # Query rows where the 'moonshot' column is equal to 1
+    response = supabase_client.table(table_name).select(
+        "*").eq("ontopic", 1).execute()
+
+    # Check if the query was successful
+    if response.status_code == 200:
+        data = response.json()["data"]
+        return data
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+        return None
+
+
+if __name__ == '__main__':
+    app.after_request(add_cors_headers)
+    app.run(port=4000, debug=True)
