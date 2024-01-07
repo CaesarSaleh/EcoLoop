@@ -1,5 +1,4 @@
 "use client";
-// require("dotenv").config();
 
 
 import ChatbotNavBar from "@/app/components/ChatbotNavBar";
@@ -7,11 +6,11 @@ import useSpeechRecognition from "./speech";
 import chatCompletion from "./assistant.js"
 import createImage from "./dalle";
 
-import Link from 'next/link';
+import {useRouter} from 'next/navigation';
+import CsvFileReader from "./addCSV";
 
 
-
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 const apiKey = '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';
 const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?"',
@@ -20,7 +19,7 @@ const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for ratin
 ];
 let prompt_index = 0;
 const Chatbot = () => {
-  
+  const router = useRouter();
   const {
     text,
     isListening,
@@ -32,8 +31,11 @@ const Chatbot = () => {
   
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
-  const [responseMessage, setResponseMessage] = useState('');
   const [imageURL, setImageURL] = useState('');
+  const [feasibility, setFeasibility] = useState('')
+  const [scalability, setScalability] = useState('')
+  const [maturityStage, setMaturityStage] = useState('')
+  const [marketPotential, setMarketPotential] = useState('')
 
   let res = null;
   // Use the module function (Small Talk)
@@ -146,7 +148,7 @@ const Chatbot = () => {
   }
 
   const redirectToURL = () => {
-    console.log("google.com")
+    router.push("https://www.google.ca")
   };
   
 
@@ -181,10 +183,12 @@ const Chatbot = () => {
                 <div className="text-sm text-gray-500 font-normal">
                   This virtual assistant will help you validate and add your idea into the database.
                 </div>
+              
               </div>
+              <CsvFileReader/>
             </div>
             {/* Messaging Interface */}
-            <div className="flex flex-col h-3/4 mt-8 overflow-hidden">
+            <div className="flex flex-col h-[47vh] mt-8 overflow-hidden">
               <div className="flex flex-col flex-grow overflow-auto">
                 {messages.map((message, index) => (
                   <div key={index} className={message.user ? 'text-right' : 'text-left'}>
@@ -209,7 +213,7 @@ const Chatbot = () => {
                       {/* Second Bar Chart */}
                       {/* <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['multiple patents','multiple services','new technology'],datasets:[{label:'Example',data:${JSON.stringify(innovation)}}]}}`} alt="Second Bar Chart" /> */}
                     </div>
-                    <button onClick={redirectToURL} className="text-xs rounded-full border border-blue-700 text-blue-700 p-1 mr-1">
+                    <button onClick={redirectToURL} className="max-w-[300px] text-xs rounded-full border border-blue-700 text-blue-700 p-1 mr-1">
                       View Virtual Reality
                     </button>
                   </>
@@ -242,16 +246,16 @@ const Chatbot = () => {
                 <button
                   id="submitButton"
                   onClick={handleSubmit}
-                  className="p-2 bg-blue-500 text-white rounded-md"
+                  className="p-1 text-sm bg-[#0b9541] text-white rounded-md m-1"
                 >
                   Submit
                 </button>
                 <button
-                  id="additionalButton"
+                  id="addSingle"
                   onClick={handleAddSingle2DB}
-                  className="p-2 bg-green-500 text-white rounded-md"
+                  className="p-1 text-sm bg-[#0b9541] text-white rounded-md m-1"
                 >
-                  Add to database
+                  Add Pair
                 </button>
               </div>
             </div>

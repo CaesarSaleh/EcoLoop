@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
+    "axios": "^1.6.5",
     "d3": "^7.8.5",
     "next": "14.0.4",
+    "papaparse": "^5.4.1",
     "plotly": "^1.0.6",
     "react": "^18",
     "react-dom": "^18",
