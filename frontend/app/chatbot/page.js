@@ -16,7 +16,7 @@ import React, { useEffect, useState } from 'react';
 const apiKey = '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';
 const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?"',
 'REPLY ONLY "Certainly! Please input strictly in the format {PROBLEM, SOLUTION} for me to rate your idea"',
-"NO EXPLANATION! ONLY OUTPUT NUMBERS! NO LABELLING NUMBERS! Analyze the {PROBLEM, SOLUTION} pair. Return a dictionary with keys as maturity stage market potential, and feasibility; mapped to the numerical values given underneath them. Maturity Stage Given the scope of the project, return the estimated number of years it takes to fully develop it and maximize your market share. Market Potential Return a list containing the estimated market size for this project in terms of millions of people and the estimated unit price for this project in terms of thousands of USD. Feasibility Return a list of floats as the answers to the following questions regarding the project. 0 is definitely not, 1 is definitely yes. The values are located between 0 and 1. Questions: Are we familiar with the technology, Is the project small, Does the project promise a high return on investment, Does the project promise a low break-even point, Is the project risk-tolerant, Are the project's goals aligned with business objectives?"
+'REPLY 1'
 ];
 let prompt_index = 0;
 const Chatbot = () => {
@@ -34,10 +34,6 @@ const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
   const [responseMessage, setResponseMessage] = useState('');
   const [imageURL, setImageURL] = useState('');
-
-  const [scalability, setScalability] = useState([]);
-  const [feasibility, setFeasibility] = useState([]);
-  const [innovation, setInnovation] = useState([]);
 
   // Use the module function
   const handleAskGPT = async(message) => {
@@ -78,27 +74,28 @@ const Chatbot = () => {
   const handleSubmit = async () => {
     setImageURL(null)
     
-    if (inputValue.trim() !== '') {
-      addMessage(true, inputValue);
-      await handleAskGPT(inputValue);
-      if (responseMessage !=='1') {
-        addMessage(false, responseMessage);
-      }
-      const imgURL = await createImage(inputValue)
-      setImageURL(imgURL)
-    } else{
-      if (text.trim() !== '') {
-        addMessage(true, text);
-        await handleAskGPT(text);
-        if (responseMessage !=='1') {
-          addMessage(false, responseMessage);
-          const imgURL = await createImage(text)
-          setImageURL(imgURL)
-        }
+    // if (inputValue.trim() !== '') {
+    //   addMessage(true, inputValue);
+    //   await handleAskGPT(inputValue);
+    //   if (responseMessage ==='1') {
+    //     const imgURL = await createImage(inputValue)
+    //     setImageURL(imgURL)
+    //   } else {
+    //     addMessage(false, responseMessage);
+    //   }
+    // } else{
+    //   if (text.trim() !== '') {
+    //     addMessage(true, text);
+    //     await handleAskGPT(text);
+    //     if (responseMessage ==='1') {
+    //       addMessage(false, responseMessage);
+    //       const imgURL = await createImage(text)
+    //       setImageURL(imgURL)
+    //     }
             
-      }
-    }
-    resetText();
+    //   }
+    // }
+    // resetText();
   }
 
 
@@ -121,6 +118,10 @@ const Chatbot = () => {
       document.getElementById('submitButton').click();
     }
   };
+
+  const handleAddSingle2DB = () => {
+    
+  }
 
   return (
     <>
@@ -191,8 +192,20 @@ const Chatbot = () => {
                     />
                   </button>
                 </div>
-                <button id="submitButton" onClick={handleSubmit} className="p-2 bg-blue-500 text-white rounded-md">
+                
+                <button
+                  id="submitButton"
+                  onClick={handleSubmit}
+                  className="p-2 bg-blue-500 text-white rounded-md"
+                >
                   Submit
+                </button>
+                <button
+                  id="additionalButton"
+                  onClick={handleAddSingle2DB}
+                  className="p-2 bg-green-500 text-white rounded-md"
+                >
+                  Add to database
                 </button>
               </div>
             </div>
