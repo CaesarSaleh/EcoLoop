@@ -1,8 +1,10 @@
+require('dotenv').config()
+
 async function createImage(userMessage) {
-  const apiKey = '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';  // Replace with your actual OpenAI API key
+  const apiKey = process.env.MEXT_PUBLIC_OPEN_AI_API_KEY;  // Replace with your actual OpenAI API key
 
   try {
-    const response = await fetch('https://api.openai.com/v1/images/generations	', {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
