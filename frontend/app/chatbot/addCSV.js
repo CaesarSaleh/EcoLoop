@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 const CsvFileReader = () => {
-  let dataList = []
+  const [dataList, setDataList] = useState([]);
   const handleFile = (e) => {
     const file = e.target.files[0];
 
@@ -17,23 +17,13 @@ const CsvFileReader = () => {
         // Assuming the first row contains headers
         const headers = rows[0].split(',');
         for (let i = 1; i < rows.length; i++) {
-          const columns = rows[i].split(',\"');
+          const columns = rows[i].split('\",\"');
 
-          // Skip empty rows
-          if (columns.length === headers.length) {
-            const rowData = {};
-
-            for (let j = 1; j < headers.length; j++) {
-              let key = headers[j].trim()
-              key = key.replace("\r", "")
-              let val = columns[j].trim()
-              val = val.replace("\r", "")
-              rowData[key] = val;
-            }
-            
-            dataList.push(rowData);
-          }
+          
+          
         }
+        setDataList(newDataList);
+        console.log(newDataList);
       };
 
       reader.readAsText(file);
@@ -41,12 +31,9 @@ const CsvFileReader = () => {
       console.error('No file selected');
     }
 
-
-
   };
-
   const handleImport = async () => {
-    const response = await fetch('http://localhost:4000/validate_dataset', {
+    const response = await fetch('/api/validate_dataset', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,6 +49,7 @@ const CsvFileReader = () => {
     }
     
   }
+
 
   return (
     <div className='flex flex-col items-end pr-4'>

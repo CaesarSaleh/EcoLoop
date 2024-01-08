@@ -14,7 +14,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 const apiKey = process.env.NEXT_PUBLIC_OPEN_AI_API_KEY;
 const prompts = ['REPLY ONLY "Hi, I am EcoLoop, your virtual assistant for rating Eco-friendly Circular Economical ideas! How are you doing?"',
-'REPLY ONLY "Certainly! Please input strictly in the format PROBLEM || SOLUTION for me to rate your idea"',
+'REPLY ONLY "Certainly! Please input strictly in the format "PROBLEM","SOLUTION" for me to rate your idea"',
 'REPLY 1'
 ];
 let prompt_index = 0;
@@ -37,7 +37,9 @@ const Chatbot = () => {
   const[maturityStage, setMaturityStage] = useState(0);
   const[marketPotential, setMarketPotential] = useState(0);
   const[viabilityScore, setViabilityScore] = useState(0);
-  const [validationText, setValidationText] = useState("")
+  const [validationText, setValidationText] = useState("");
+  const [problem, setProblem] = useState("");
+  const [solution, setSolution] = useState("");
   
   let res = null;
   // Use the module function (Small Talk)
@@ -81,26 +83,29 @@ const Chatbot = () => {
         await handleAskGPT(inputValue);
         addMessage(false, res);
       } else {
+        setProblem(inputValue.split("\",\"")[0])
+        const sol  = inputValue.split("\",\"")[1]
+        setSolution(inputValue.split("\",\"")[1])
         const metrics = {
           "Maturity Stage": 0.3,
           "Market Potential": 0.8,
           "Feasibility": 0.5,
           "Scalability": 0.6
           };
-        setValidationText("It looks like you've provided a set of values associated with different factors related to a business or product. These values seem to represent assessments or scores for various aspects. Here's a breakdown based on the provided data: Maturity Stage: 0.3 This may indicate the current stage of maturity of a product, project, or business. A value of 0.3 suggests that it might be in the early stages of development or adoption. Market Potential: 0.8 This value of 0.8 indicates a relatively high market potential. It suggests that there is a favorable market for the product or business, and there is a good opportunity for growth. Feasibility: 0.5 A feasibility score of 0.5 suggests a moderate level of feasibility. This could refer to the practicality and viability of the project or product. Scalability: 0.6 A scalability score of 0.6 implies a moderate level of scalability. Scalability refers to the ability of a system, product, or business to handle growth and increased demand. Overall, these values seem to provide a snapshot of the current state and potential of the subject, with moderate to high market potential, feasibility, and scalability, but a lower maturity stage. Keep in mind that the interpretation may vary based on the specific context and industry.");
-        
+        const sentence = "It looks like you've provided a set of values associated with different factors related to a business or product. These values seem to represent assessments or scores for various aspects. Here's a breakdown based on the provided data: Maturity Stage: 0.3 This may indicate the current stage of maturity of a product, project, or business. A value of 0.3 suggests that it might be in the early stages of development or adoption. Market Potential: 0.8 This value of 0.8 indicates a relatively high market potential. It suggests that there is a favorable market for the product or business, and there is a good opportunity for growth. Feasibility: 0.5 A feasibility score of 0.5 suggests a moderate level of feasibility. This could refer to the practicality and viability of the project or product. Scalability: 0.6 A scalability score of 0.6 implies a moderate level of scalability. Scalability refers to the ability of a system, product, or business to handle growth and increased demand. Overall, these values seem to provide a snapshot of the current state and potential of the subject, with moderate to high market potential, feasibility, and scalability, but a lower maturity stage. Keep in mind that the interpretation may vary based on the specific context and industry.";
+        setValidationText(sentence)
         // const response = await handleAskRAG(inputValue);   // problem solution pair
         // console.log(response)
         // console.log(response.metrics)
         // console.log(response.validationText)
-        const imgUrl = await createImage(inputValue)
+        const imgUrl = await createImage(sol)
         // 1. data visualization
         setMaturityStage(metrics["Maturity Stage"]);
         setMarketPotential(metrics["Market Potential"]);
         
         setFeasibility(metrics["Feasibility"]);
         setScalability(metrics["Scalability"]);
-        addMessage(false, validation_text);
+        addMessage(false, sentence);
         
         
         setImageURL(imgUrl)
@@ -179,7 +184,7 @@ const Chatbot = () => {
 
   const handleAddSingle2DB = async () => {
     // http request to store {pair: {problem: prob, solution: sol}, maturity, market_potential, scalability, feasibility, score, validation text}
-    const response = await fetch('http://localhost:4000/add_to_db', {
+    const response = await fetch('/api/add_to_db', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -191,7 +196,7 @@ const Chatbot = () => {
         scalability,
         feasibility,
         viabilityScore,
-        validation_text
+        validationText
       }),
     });
   
@@ -225,7 +230,7 @@ const Chatbot = () => {
               <div className="flex flex-col flex-grow overflow-auto">
                 {messages.map((message, index) => (
                   <div key={index} className={message.user ? 'text-right' : 'text-left'}>
-                    <div className={message.user ? "p-2 bg-blue-700 rounded-md inline-block text-white" : "p-2 bg-gray-200 rounded-md inline-block max-w-[600px]"}>
+                    <div className={message.user ? "text-sm p-2 bg-blue-700 rounded-md inline-block text-white" : "text-sm p-2 bg-gray-200 rounded-md inline-block max-w-[600px]"}>
                       {message.text}
                     </div>
                   </div>
@@ -238,7 +243,7 @@ const Chatbot = () => {
                     </div>
                     <div>
 
-                      <img src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['Maturity Stage','Market Potential','Feasibility','Scalability'],datasets:[{label:'Example',data:${JSON.stringify([maturityStage, marketPotential, feasibility, scalability])}}]}}`} alt="Bar Chart" />
+                      <img className="w-1/4 h-auto" src={`https://quickchart.io/chart?c={type:'bar',data:{labels:['Maturity Stage','Market Potential','Feasibility','Scalability'],datasets:[{label:'Example',data:${JSON.stringify([maturityStage, marketPotential, feasibility, scalability])}}]}}`} alt="Bar Chart" />
 
                     </div>
                     <button onClick={redirectToURL} className="max-w-[300px] text-xs rounded-full border border-blue-700 text-blue-700 p-1 mr-1">
