@@ -33,11 +33,11 @@ Visualizations: Gain profound insights through graphical representations, maturi
 
 3D-VR Integration: Immerse yourself in proposed solutions with realistic virtual reality experiences.
 
-![Alt Text](frontend/public/public/login.png)
-![Alt Text](frontend/public/public/chatbot.png)
-![Alt Text](frontend/public/public/database.png)
-![Alt Text](frontend/public/public/pair.png)
-![Alt Text](frontend/public/public/vr.png)
+![Alt Text](frontend/public/login.png)
+![Alt Text](frontend/public/chatbot.png)
+![Alt Text](frontend/public/database.png)
+![Alt Text](frontend/public/pair.png)
+![Alt Text](frontend/public/vr.png)
 
 
 ### Technologies Used:
