@@ -12,6 +12,9 @@ export default function CurrentPairView({params}) {
     const [claim_data, setClaimData] = useState(null);
     const [keywords, setKeywords] = useState(null);
     const router = useRouter();
+    const redirectToURL = () => {
+        router.push("http://127.0.0.1:7861/")
+      };
     const chatGptApiKey = process.env.NEXT_PUBLIC_OPEN_AI_API_KEY;
     const apiUrl = 'https://api.openai.com/v1/chat/completions';
     const radarChartData = {
@@ -286,7 +289,8 @@ useEffect(() => {
             <p className="text-left"><span className="font-bold">Created At</span></p>
             <p className="text-right">{claim_data.created_at}</p>
         </div>
-        <div className="flex justify-between"><p>{keywords}</p></div>
+        <div className="flex justify-between"><button onClick={redirectToURL} className="max-w-[300px] text-xs rounded-full border border-blue-700 text-blue-700 p-1 mr-1">View Virtual Reality</button></div>
+        <div className="flex justify-between"><p>Keywords: {keywords}</p></div>
     </div>
 ) : (
     <div className="bg-gray-200 w-[80%] animate-pulse h-[5vh] rounded-2xl"></div>
